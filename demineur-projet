@@ -1,0 +1,107 @@
+from tkinter import Tk, Canvas, Button, font
+from random import randrange
+
+# Variables globales
+
+TAILLE_JEU = 10
+NB_MINES = 10
+
+JEU = []
+BOUTONS = []
+
+COLORS = ['white', 'blue', 'green', 'red', 'purple', 'brown']
+
+# Fonctions
+
+def initJeu():
+    for i in range(TAILLE_JEU):
+        JEU.append([0] * TAILLE_JEU) #On crée une matrice vide
+    mines = 0
+    while mines < NB_MINES:
+        i = randrange(0, TAILLE_JEU)
+        j = randrange(0, TAILLE_JEU) # On choisit aléatoirement x et y pour placer une mine
+        if JEU[i][j] >= 0:
+            JEU[i][j] = -NB_MINES-1
+            if i > 0: # On incrémente les valeurs autour
+                JEU[i-1][j] += 1
+                if j > 0:
+                    JEU[i-1][j-1] += 1
+                if j < TAILLE_JEU-1:
+                    JEU[i-1][j+1] += 1
+            if j > 0:
+                JEU[i][j-1] += 1
+            if j < TAILLE_JEU - 1:
+                JEU[i][j+1] += 1
+            if i < TAILLE_JEU - 1:
+                JEU[i+1][j] += 1
+                if j > 0:
+                    JEU[i+1][j-1] += 1
+                if j < TAILLE_JEU-1:
+                    JEU[i+1][j+1] += 1
+            mines += 1
+
+def bouton(n): # Est exécutée quand bouton appuyé
+    i = n//TAILLE_JEU
+    j = n%TAILLE_JEU
+    if JEU[i][j] < 0:
+        print("Jeu terminé")
+        # Terminer le jeu
+    elif JEU[i][j] == 0:
+        supprimer_vides(i, j)
+        # Ouvrir autour fonctuon récursive
+    else:
+        btn = Button(root, text=JEU[i][j], fg=COLORS[JEU[i][j]], width=3, height=1, command=lambda c=num: bouton(c))
+        btn.grid(row=i+2, column=j)
+
+def supprimer_vides(i,j):
+    Button.destroy(BOUTONS[i][j])
+    JEU[i][j] = "a"
+    if i > 0:
+        if JEU[i-1][j] == 0:
+            supprimer_vides(i-1,j)
+        if j > 0:
+            if JEU[i-1][j-1] == 0:
+                supprimer_vides(i-1, j-1)
+        if j < TAILLE_JEU-1:
+            if JEU[i-1][j+1] == 0:
+                supprimer_vides(i-1, j+1)
+    if j > 0:
+        if JEU[i][j-1] == 0:
+            supprimer_vides(i, j-1)
+    if j < TAILLE_JEU - 1:
+        if JEU[i][j+1] == 0:
+            supprimer_vides(i, j+1)
+    if i < TAILLE_JEU - 1:
+        if JEU[i+1][j] == 0:
+            supprimer_vides(i+1, j)
+        if j > 0:
+            if JEU[i+1][j-1] == 0:
+                supprimer_vides(i+1, j-1)
+        if j < TAILLE_JEU-1:
+            if JEU[i+1][j+1] == 0:
+                supprimer_vides(i+1, j+1)
+
+# Tkinter
+
+
+root = Tk()
+
+initJeu()
+
+demine = Button(root, text="Déminer")
+demine.grid(row=0, column=0, columnspan=3)
+
+flag = Button(root, text="Drapeau")
+flag.grid(row=0, column=3, columnspan=3)
+
+for i in range(TAILLE_JEU):
+    L = []
+    for j in range(TAILLE_JEU):
+        num = i*TAILLE_JEU + j
+        btn = Button(root, text="", width=3, height=1, command=lambda c=num: bouton(c))
+        btn.grid(row=i+2, column=j)
+        L.append(btn)
+    BOUTONS.append(L)
+
+
+root.mainloop()
